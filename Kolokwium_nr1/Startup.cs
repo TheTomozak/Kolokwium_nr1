@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Kolokwium_nr1
+namespace Kolokwium_nr1 //Test czy dziala
 {
     public class Startup
     {
