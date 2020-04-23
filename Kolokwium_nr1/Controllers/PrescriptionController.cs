@@ -133,6 +133,8 @@ namespace Kolokwium_nr1.Controllers
                     com.Parameters.AddWithValue("IdPatient", keyIdPrescription+1);
                     com.Parameters.AddWithValue("IdDoctor", request.IdDoctor);
 
+                    com.ExecuteNonQuery();
+                    transaction.Commit();
 
 
                 }
