@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Kolokwium_nr1.DTOs.Requests;
 using Kolokwium_nr1.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,19 +28,16 @@ namespace Kolokwium_nr1.Controllers
                 com.CommandText =
                     "SELECT * FROM Prescription inner  join Prescription_Medicament On Prescription.IdPrescription= Prescription_Medicament.IdPrescription " +
                     "inner join  Medicament On Prescription_Medicament.IdMedicament = Medicament.IdMedicament WHERE Prescription.IdPrescription=@IdPrescription";
-                
+
                 com.Parameters.AddWithValue("IdPrescription", id);
 
-
-                
 
                 con.Open();
                 var dataReader = com.ExecuteReader();
                 if (dataReader.Read())
                 {
-
                     var prescription = new Prescription();
-                    var medicament =new  Medicament();
+                    var medicament = new Medicament();
 
                     if (dataReader["IdPatient"] != DBNull.Value)
                         prescription.IdPatient = int.Parse(dataReader["IdPatient"].ToString());
@@ -78,14 +76,75 @@ namespace Kolokwium_nr1.Controllers
                     prescription.MedicamentList = listMedicament;
 
                     return Ok(prescription);
-
-
                 }
-
             }
 
             return NotFound("Prescription not found");
         }
 
+
+        [HttpPost]
+        public IActionResult EnrollStudent(AddPrescriptionRequest request)
+        {
+            var pharmacy = new Pharmacy();
+            pharmacy.Date = request.Date;
+            pharmacy.DueDate = request.DueDate;
+            pharmacy.IdPatient = request.IdPatient;
+            pharmacy.IdDoctor = request.IdDoctor;
+
+            using (var con = new SqlConnection(ConString))
+            using (var com = new SqlCommand())
+            {
+                com.Connection = con;
+                con.Open();
+
+                var transaction = con.BeginTransaction();
+                com.Transaction = transaction;
+
+                try
+                {
+
+                    int compare = DateTime.Compare(request.DueDate, request.Date);
+
+                    if (compare < 0)
+                    {
+                        return BadRequest("DueDate is earlier than the Date");
+                    }
+
+
+                    com.CommandText = "SELECT MAX(IdPrescription) FROM Prescription";
+
+                    int keyIdPrescription = 0;
+
+
+                    var dr = com.ExecuteReader();
+                    if (dr.Read())
+                    {
+                        keyIdPrescription = int.Parse(dr["IdPrescription"].ToString());
+                    }
+
+
+
+                    int keyPrescription;
+
+                    com.CommandText = "Insert into Prescription(IdPrescription, Date, DueDate, IdPatient, IdDoctor) " +
+                                      "Vaules (@IdPrescription, @Date, @DueDate, @IdPatient, @IdDoctor)";
+                    com.Parameters.AddWithValue("IdPrescription", request.IdPrescription);
+                    com.Parameters.AddWithValue("Date", request.Date);
+                    com.Parameters.AddWithValue("DueDate", request.DueDate);
+                  //  com.Parameters.AddWithValue("IdPatient", request.keyPrescription);
+                    com.Parameters.AddWithValue("IdDoctor", request.IdDoctor);
+
+
+
+                }
+                catch (SqlException e)
+                {
+                    transaction.Rollback();
+                }
+            }
+
+            return Ok();
+        }
     }
 }
