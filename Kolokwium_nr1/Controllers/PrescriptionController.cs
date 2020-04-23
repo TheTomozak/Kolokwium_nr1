@@ -125,14 +125,12 @@ namespace Kolokwium_nr1.Controllers
 
 
 
-                    int keyPrescription;
-
                     com.CommandText = "Insert into Prescription(IdPrescription, Date, DueDate, IdPatient, IdDoctor) " +
                                       "Vaules (@IdPrescription, @Date, @DueDate, @IdPatient, @IdDoctor)";
                     com.Parameters.AddWithValue("IdPrescription", request.IdPrescription);
                     com.Parameters.AddWithValue("Date", request.Date);
                     com.Parameters.AddWithValue("DueDate", request.DueDate);
-                  //  com.Parameters.AddWithValue("IdPatient", request.keyPrescription);
+                    com.Parameters.AddWithValue("IdPatient", keyIdPrescription+1);
                     com.Parameters.AddWithValue("IdDoctor", request.IdDoctor);
 
 
